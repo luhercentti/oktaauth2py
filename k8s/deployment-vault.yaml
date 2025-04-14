@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: okta-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: okta-flask
+  template:
+    metadata:
+      labels:
+        app: okta-flask
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "okta-flask"
+        vault.hashicorp.com/agent-inject-secret-okta-creds: "okta/data/flask-app"
+        vault.hashicorp.com/agent-inject-template-okta-creds: |
+          {{- with secret "okta/data/flask-app" -}}
+          export OKTA_CLIENT_ID="{{ .Data.data.client_id }}"
+          export OKTA_CLIENT_SECRET="{{ .Data.data.client_secret }}"
+          export FLASK_SECRET_KEY="{{ .Data.data.flask_secret_key }}"
+          export OKTA_DOMAIN="{{ .Data.data.okta_domain }}"
+          export OKTA_REDIRECT_URI="{{ .Data.data.redirect_uri }}"
+          export VAULT_ADDR="{{ .Data.data.vault_addr }}"
+          {{- end }}
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+    spec:
+      containers:
+      - name: okta-flask
+        image: luhercen/okta-flask-app:latest
+        ports:
+        - containerPort: 8080
+        command: ["/bin/sh", "-c", "source /vault/secrets/okta-creds && gunicorn --bind 0.0.0.0:8080 app:app"]
