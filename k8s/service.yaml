@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: okta-flask-service
 spec:
+  type: NodePort  # Required for Minikube external access
   selector:
     app: okta-flask
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8080     # Cluster-internal port
+      targetPort: 5000  # Must match your Flask app's port (from app.py)
+      nodePort: 30000  # Optional: Fixed external port (30000-32767)

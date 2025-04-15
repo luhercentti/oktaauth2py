@@ -34,7 +34,7 @@ python3 -c 'import secrets; print(secrets.token_hex(32))'
 or
 openssl rand -hex 32
 
-/////
+///// to connect minikube with vault locally
 
 vault auth enable kubernetes
 
@@ -51,26 +51,37 @@ vault write auth/kubernetes/config \
   kubernetes_ca_cert=@minikube-ca.crt \
   token_reviewer_jwt="$TOKEN_REVIEW_JWT"
 
-////
+///////
+the standalone docker file works only locally with docker without minikube
 
+docker build -t standalone-okta-flask-app:latest -f stanadaloneapp.py
+
+test locally before minikube:
+
+docker run -p 5000:5000 \
+  -e VAULT_ADDR='http://host.docker.internal:8200' \
+  -e VAULT_TOKEN='root' \
+  standalone-okta-flask-app:latest
+
+
+//////
+
+Run in minikube:
 
 docker build -t luhercen/okta-flask-app:latest .
-
-test locally:
-docker run -p 8080:8080 \
-  -e OKTA_DOMAIN="https://dev-xxxxx.okta.com" \
-  -e OKTA_CLIENT_ID="xxxxxx" \
-  -e OKTA_CLIENT_SECRET="xxxxxx" \
-  -e OKTA_REDIRECT_URI="http://192.168.49.2:30000/callback" \
-  -e FLASK_SECRET_KEY="xxxxxxx" \
-  luhercen/okta-flask-app:latest
 
 docker login
 docker push luhercen/okta-flask-app:latest
 verify: https://hub.docker.com/repository/docker/luhercen/okta-flask-app
 
+# Create a secret (run this once)
+kubectl create secret generic vault-credentials \
+  --from-literal=token=root          # Replace "root" with your token
 
-docker run -p 5000:5000 \
-  -e VAULT_ADDR='http://host.docker.internal:8200' \
-  -e VAULT_TOKEN='root' \
-  luhercen/okta-flask-app:latest
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+  
+minikube service okta-flask-service --url
+
+
+gitleaks git -v

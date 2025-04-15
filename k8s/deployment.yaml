@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: okta-flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: okta-flask
+  template:
+    metadata:
+      labels:
+        app: okta-flask
+    spec:
+      containers:
+      - name: okta-flask
+        image: luhercen/okta-flask-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: VAULT_ADDR           # Passed from host to Minikube
+          value: "http://host.minikube.internal:8200"
+        - name: VAULT_TOKEN          # In production, use a Kubernetes secret!
+          valueFrom:
+            secretKeyRef:
+              name: vault-credentials
+              key: token
