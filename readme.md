@@ -16,7 +16,8 @@ vault kv put okta/flask-app \
   flask_secret_key="your-flask-secret-key" \
   okta_domain="https://dev-123456.okta.com" \
   redirect_uri="http://okta-flask-service.default.svc.cluster.local:8080/callback" \
-  vault_addr="http://host.docker.internal:8200"
+  vault_addr="http://host.docker.internal:8200"  \
+  auth_server="default"
 
 
 # Create a policy
