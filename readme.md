@@ -55,7 +55,7 @@ vault write auth/kubernetes/config \
 ///////
 the standalone docker file works only locally with docker without minikube
 
-docker build -t standalone-okta-flask-app:latest -f stanadaloneapp.py
+docker build -t standalone-okta-flask-app:latest -f Dockerfile.standalone .
 
 test locally before minikube:
 
